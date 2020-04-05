@@ -1,26 +1,25 @@
 import 'isomorphic-fetch'
+import Link from 'next/link'
+
 export default class extends React.Component {
   static async getInitialProps({ query }) {
     let idChannel = query.id
 
+    let [reqChannel, reqAudios, reqSeries] = await Promise.all([
+      fetch(`https://api.audioboom.com/channels/${idChannel}`),
+      fetch(`https://api.audioboom.com/channels/${idChannel}/audio_clips`),
+      fetch(`https://api.audioboom.com/channels/${idChannel}/child_channels`)
+    ])
+
     //   Llama el canal con el id especificado
-    let reqChannel = await fetch(
-      `https://api.audioboom.com/channels/${idChannel}`
-    )
     let dataChannel = await reqChannel.json()
     let channel = dataChannel.body.channel
 
     //   LLama los archivos de audio principales del podcast
-    let reqAudios = await fetch(
-      `https://api.audioboom.com/channels/${idChannel}/audio_clips`
-    )
     let dataAudios = await reqAudios.json()
     let audio_clips = dataAudios.body.audio_clips
 
     //   LLama los archivos de audio de subseries del podcast
-    let reqSeries = await fetch(
-      `https://api.audioboom.com/channels/${idChannel}/child_channels`
-    )
     let dataSeries = await reqSeries.json()
     let series = dataSeries.body.channels
     return { channel, audio_clips, series }
@@ -33,11 +32,19 @@ export default class extends React.Component {
         <h1>{channel.title}</h1>
         <h2>Series</h2>
         {series.map((serie) => (
-          <div>{serie.title}</div>
+          <Link href={`/podcast?id=${serie.id}`}>
+            <a>
+              <div key={serie.id}>{serie.title}</div>
+            </a>
+          </Link>
         ))}
         <h2>Ultimos Podcast</h2>
         {audio_clips.map((clip) => (
-          <div>{clip.title}</div>
+          <Link href={`/podcast?id=${clip.id}`}>
+            <a>
+              <div key={clip.id}>{clip.title}</div>
+            </a>
+          </Link>
         ))}
 
         <style jsx>{`
