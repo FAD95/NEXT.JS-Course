@@ -1,6 +1,8 @@
 import 'isomorphic-fetch'
 import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player'
+import 'react-h5-audio-player/src/styles.scss'
 import Link from 'next/link'
+import '../styles/styles.scss'
 
 export default class extends React.Component {
   static async getInitialProps({ query }) {
@@ -11,14 +13,6 @@ export default class extends React.Component {
     let clip = (await fetchClip.json()).body.audio_clip
     return { clip }
   }
-
-  //   state = { volumeText: '100%' }
-
-  //   componentDidMount(): void {
-  //     this.player.current.audio.current.addEventListener('volumechange', (e) => {
-  //       this.setState({ volumeText: `${((e.target as HTMLAudioElement).volume * 100).toFixed(0)}%` })
-  //     })
-  //   }
 
   render() {
     const { clip } = this.props
@@ -48,25 +42,29 @@ export default class extends React.Component {
             <div className="player">
               <h3>{clip.title}</h3>
               <h6>{clip.channel.title}</h6>
-
-              <AudioPlayer
-                src={clip.urls.high_mp3}
-                layout="horizontal-reverse"
-                customProgressBarSection={[
-                  RHAP_UI.PROGRESS_BAR,
-                  RHAP_UI.CURRENT_TIME,
-                  <div>/</div>,
-                  RHAP_UI.DURATION
-                ]}
-                customVolumeControls={[RHAP_UI.VOLUME]}
-                layout={'horizontal-reverse'}
-                customAdditionalControls={[]}
-              />
+              <div>
+                <AudioPlayer
+                  autoPlay
+                  src={clip.urls.high_mp3}
+                  layout={'stacked-reverse'}
+                  customProgressBarSection={[
+                    RHAP_UI.PROGRESS_BAR,
+                    RHAP_UI.CURRENT_TIME,
+                    <div className="barrita"> / </div>,
+                    RHAP_UI.DURATION
+                  ]}
+                  customVolumeControls={[RHAP_UI.VOLUME]}
+                  customAdditionalControls={[]}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         <style jsx>{`
+          .barrita {
+            padding-top: 142px;
+          }
           nav {
             background: none;
           }
@@ -106,12 +104,20 @@ export default class extends React.Component {
             background: rgba(0, 0, 0, 0.3);
             text-align: center;
           }
+          .player div {
+            position: relative;
+            height: 160px;
+          }
           h3 {
             margin: 0;
+            font-size: 25px;
+            font-family: Arial;
           }
           h6 {
             margin: 0;
             margin-top: 1em;
+            font-size: 18px;
+            font-family: Arial;
           }
           audio {
             margin-top: 2em;
@@ -125,6 +131,12 @@ export default class extends React.Component {
             right: 0;
             bottom: 0;
             z-index: 99999;
+          }
+           {
+            /* .rhap_play-pause-button {
+            // Remember to use !important to overwrite inline styles.
+            background-color: red !important;
+          } */
           }
         `}</style>
 

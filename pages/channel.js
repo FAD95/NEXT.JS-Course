@@ -32,7 +32,7 @@ export default class extends React.Component {
         <h1>{channel.title}</h1>
         <h2>Series</h2>
         {series.map((serie) => (
-          <Link href={`/podcast?id=${serie.id}`}>
+          <Link key={serie.id} href={`/podcast?id=${serie.id}`}>
             <a>
               <div key={serie.id}>{serie.title}</div>
             </a>
@@ -40,9 +40,9 @@ export default class extends React.Component {
         ))}
         <h2>Ultimos Podcast</h2>
         {audio_clips.map((clip) => (
-          <Link href={`/podcast?id=${clip.id}`}>
+          <Link key={clip.id} href={`/podcast?id=${clip.id}`}>
             <a>
-              <div key={clip.id}>{clip.title}</div>
+              <div>{clip.title}</div>
             </a>
           </Link>
         ))}

@@ -1,0 +1,65 @@
+$rhap_theme-color: #868686 !default;
+$rhap_background-color: #333 !default;
+$rhap_bar-color: #dddddd !default;
+$rhap_time-color: #ddd !default;
+$rhap_font-family: inherit !default;
+
+.rhap_container {
+  font-family: $rhap_font-family;
+  background-color: $rhap_background-color;
+  opacity: 0.8;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  &:focus {
+    outline: 0;
+  }
+}
+
+.rhap_progress-section {
+  height: 50px !important;
+  padding: 0 20%;
+}
+
+.rhap_controls-section {
+  padding: 0 5%;
+}
+
+.rhap_time {
+  color: $rhap_time-color !important;
+}
+
+.rhap_progress-indicator {
+  background: #8756ca !important;
+}
+.rhap_main-controls {
+  margin-left: 40px !important;
+}
+.rhap_main-controls-button {
+  &:focus {
+    outline: none !important;
+  }
+}
+
+.rhap_play-pause-button {
+  font-size: 75px !important;
+  width: 75px !important;
+  height: 75px !important;
+  &:focus {
+    outline: none !important;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .rhap_volume-controls {
+    display: none !important;
+  }
+
+  .rhap_additional-controls {
+    display: none !important;
+  }
+
+  .rhap_main-controls {
+    margin: 0 auto !important;
+  }
+}
