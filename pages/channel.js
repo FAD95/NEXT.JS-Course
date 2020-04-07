@@ -28,58 +28,95 @@ export default class extends React.Component {
     const { channel, audio_clips, series } = this.props
     return (
       <div>
-        <header>Podcasts</header>
-        <h1>{channel.title}</h1>
-        <h2>Series</h2>
-        {series.map((serie) => (
-          <Link key={serie.id} href={`/podcast?id=${serie.id}`}>
-            <a>
-              <div key={serie.id}>{serie.title}</div>
-            </a>
-          </Link>
-        ))}
-        <h2>Ultimos Podcast</h2>
-        {audio_clips.map((clip) => (
-          <Link key={clip.id} href={`/podcast?id=${clip.id}`}>
-            <a>
-              <div>{clip.title}</div>
-            </a>
-          </Link>
-        ))}
+        <Link href="/">
+          <a>
+            <header>Podcasts</header>{' '}
+          </a>
+        </Link>
+        {console.log(channel.urls.banner_image.original)}
+        {channel.urls.banner_image.original != null ? (
+          <img
+            className="banner"
+            src={channel.urls.banner_image.original}
+            alt={`${channel.title} banner`}
+          />
+        ) : (
+          <div className="defaultBanner">
+            <h1>{channel.title}</h1>
+          </div>
+        )}
+
+        <p>{channel.description}</p>
+
+        {audio_clips > [] ? (
+          <>
+            <h2>Ultimos Podcast</h2>
+            {audio_clips.map((clip) => (
+              <Link key={clip.id} href={`/podcast?id=${clip.id}`}>
+                <a className="podcast">
+                  <h3>{clip.title}</h3>
+                  <div className="meta">
+                    {Math.ceil(clip.duration / 60)} minutes
+                  </div>
+                </a>
+              </Link>
+            ))}
+          </>
+        ) : null}
+
+        {series > [] ? (
+          <>
+            <h2>Series</h2>
+            {series.map((serie) => (
+              <Link key={serie.id} href={`/channel?id=${serie.id}`}>
+                <a className="podcast">
+                  <h3>{serie.title}</h3>
+                </a>
+              </Link>
+            ))}
+            {console.log(series)}
+          </>
+        ) : null}
 
         <style jsx>{`
-          .channels {
-            display: grid;
-            grid-gap: 15px;
-            padding: 15px;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-          }
           header {
             color: #fff;
             background: #8756ca;
             padding: 15px;
           }
-          .channel {
-             {
-              /* max-width: 1000px; */
-            }
-             {
-              /* margin: 0 auto 0.5em; */
-            }
-            display: block;
-            border-radius: 3px;
-            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
-            text-align: center;
-            margin-bottom: 0.5em;
+          .defaultBanner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2a0a22;
+            box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
           }
-          .channel img {
+          .defaultBanner h1 {
+            font-size: 7em;
+            text-align: center;
+            color: #bbb;
+          }
+          .banner {
             width: 100%;
           }
-          .h2 {
-            padding: 5px;
-            font-size: 0.9em;
-            font-weight: 600;
+          .podcast {
+            display: block;
+            text-decoration: none;
+            color: #333;
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+          }
+          .podcast:hover {
+            color: #000;
+          }
+          .podcast h3 {
             margin: 0;
+          }
+          .podcast .meta {
+            color: #666;
+            margin-top: 0.5em;
+            font-size: 0.8em;
           }
         `}</style>
         <style jsx global>{`
