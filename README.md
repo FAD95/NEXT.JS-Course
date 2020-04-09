@@ -2,7 +2,7 @@
 
 App de Podcasts integrada con la API de AudioBoom para aprender NEXT.JS
 
-![Captura de la App](./.readme-static/captura.png)
+![Captura de la App](./.readme-static/App.png)
 
 ## ¿Cómo funciona?
 
