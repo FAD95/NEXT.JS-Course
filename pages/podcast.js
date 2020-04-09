@@ -1,30 +1,46 @@
 import 'isomorphic-fetch'
-import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player'
-import 'react-h5-audio-player/src/styles.scss'
-import Link from 'next/link'
-import '../styles/styles.scss'
+import { Link } from '../routes'
+import Layout from '../components/Layout'
+import AudioPlayer from '../components/AudioPlayer'
+import Error from '../_error'
 
 export default class extends React.Component {
-  static async getInitialProps({ query }) {
-    let id = query.id
-    let fetchClip = await fetch(
-      `https://api.audioboom.com/audio_clips/${id}.mp3`
-    )
-    let clip = (await fetchClip.json()).body.audio_clip
-    return { clip }
+  static async getInitialProps({ query, res }) {
+    try {
+      let id = query.id
+      let fetchClip = await fetch(
+        `https://api.audioboom.com/audio_clips/${id}.mp3`
+      )
+
+      if (fetchClip.status >= 400) {
+        res.statusCode = fetchClip.status
+        return {
+          clip: null,
+          statusCode: fetchClip.status
+        }
+      }
+
+      let clip = (await fetchClip.json()).body.audio_clip
+      return { clip, statusCode: 200 }
+    } catch (e) {
+      return {
+        clip: null,
+        statusCode: 503
+      }
+    }
   }
 
   render() {
-    const { clip } = this.props
-
+    const { clip, statusCode } = this.props
+    if (statusCode !== 200) {
+      return <Error statusCode={statusCode} />
+    }
     return (
-      <div>
-        <header>Podcasts</header>
-
+      <Layout title={clip.title}>
         <div className="modal">
           <div className="clip">
             <nav>
-              <Link href={`/channel?id=${clip.channel.id}`}>
+              <Link href={`/${clip.channel.title}.${clip.channel.id}`}>
                 <a className="close">&lt; Volver</a>
               </Link>
             </nav>
@@ -43,19 +59,7 @@ export default class extends React.Component {
               <h3>{clip.title}</h3>
               <h6>{clip.channel.title}</h6>
               <div>
-                <AudioPlayer
-                  autoPlay
-                  src={clip.urls.high_mp3}
-                  layout={'stacked-reverse'}
-                  customProgressBarSection={[
-                    RHAP_UI.PROGRESS_BAR,
-                    RHAP_UI.CURRENT_TIME,
-                    <div className="barrita"> / </div>,
-                    RHAP_UI.DURATION
-                  ]}
-                  customVolumeControls={[RHAP_UI.VOLUME]}
-                  customAdditionalControls={[]}
-                />
+                <AudioPlayer clip={clip} />
               </div>
             </div>
           </div>
@@ -147,7 +151,7 @@ export default class extends React.Component {
             background: white;
           }
         `}</style>
-      </div>
+      </Layout>
     )
   }
 }

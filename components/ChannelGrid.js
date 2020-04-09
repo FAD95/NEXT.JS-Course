@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import { Link } from '../routes'
+import slug from '../helpers/slug'
 export default class ChannelGrid extends React.Component {
   render() {
     const { channels, language } = this.props
@@ -9,7 +10,14 @@ export default class ChannelGrid extends React.Component {
         <div className="channels">
           {channels.map((channel) => (
             <div key={channel.id}>
-              <Link href={`/channel?id=${channel.id}`}>
+              <Link
+                route="channel"
+                params={{
+                  slug: slug(channel.title),
+                  id: channel.id
+                }}
+                prefetch
+              >
                 <a className="channel">
                   <img
                     src={channel.urls.logo_image.original}

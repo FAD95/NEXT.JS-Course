@@ -1,39 +1,81 @@
 import 'isomorphic-fetch'
-import Link from 'next/link'
+import Layout from '../components/Layout'
+import PodcastList from '../components/PodcastList'
+import ChannelGrid from '../components/ChannelGrid'
+import Error from '../_error'
+import PodcastPlayer from '../components/PodcastPlayer'
 
 export default class extends React.Component {
-  static async getInitialProps({ query }) {
-    let idChannel = query.id
-
-    let [reqChannel, reqAudios, reqSeries] = await Promise.all([
-      fetch(`https://api.audioboom.com/channels/${idChannel}`),
-      fetch(`https://api.audioboom.com/channels/${idChannel}/audio_clips`),
-      fetch(`https://api.audioboom.com/channels/${idChannel}/child_channels`)
-    ])
-
-    //   Llama el canal con el id especificado
-    let dataChannel = await reqChannel.json()
-    let channel = dataChannel.body.channel
-
-    //   LLama los archivos de audio principales del podcast
-    let dataAudios = await reqAudios.json()
-    let audio_clips = dataAudios.body.audio_clips
-
-    //   LLama los archivos de audio de subseries del podcast
-    let dataSeries = await reqSeries.json()
-    let series = dataSeries.body.channels
-    return { channel, audio_clips, series }
+  constructor(props) {
+    super(props)
+    this.state = {
+      openPodcast: null
+    }
   }
+
+  static async getInitialProps({ query, res }) {
+    try {
+      let idChannel = query.id
+
+      let [reqChannel, reqAudios, reqSeries] = await Promise.all([
+        fetch(`https://api.audioboom.com/channels/${idChannel}`),
+        fetch(`https://api.audioboom.com/channels/${idChannel}/audio_clips`),
+        fetch(`https://api.audioboom.com/channels/${idChannel}/child_channels`)
+      ])
+      if (reqChannel.status >= 400) {
+        res.statusCode = reqChannel.status
+        return {
+          channel: null,
+          audio_clips: null,
+          series: null,
+          statusCode: reqChannel.status
+        }
+      }
+
+      //   Llama el canal con el id especificado
+      let dataChannel = await reqChannel.json()
+      let channel = dataChannel.body.channel
+
+      //   LLama los archivos de audio principales del podcast
+      let dataAudios = await reqAudios.json()
+      let audio_clips = dataAudios.body.audio_clips
+
+      //   LLama los archivos de audio de subseries del podcast
+      let dataSeries = await reqSeries.json()
+      let series = dataSeries.body.channels
+      return { channel, audio_clips, series, statusCode: 200 }
+    } catch (e) {
+      return {
+        channel: null,
+        audio_clips: null,
+        series: null,
+        statusCode: 503
+      }
+    }
+  }
+
+  openPodcast = (event, podcast) => {
+    event.preventDefault()
+    this.setState({
+      openPodcast: podcast
+    })
+  }
+
+  closePodcast = (event) => {
+    event.preventDefault()
+    this.setState({
+      openPodcast: null
+    })
+  }
+
   render() {
-    const { channel, audio_clips, series } = this.props
+    const { channel, audio_clips, series, statusCode } = this.props
+    const { openPodcast, closePodcast } = this.state
+    if (statusCode !== 200) {
+      return <Error statusCode={statusCode} />
+    }
     return (
-      <div>
-        <Link href="/">
-          <a>
-            <header>Podcasts</header>{' '}
-          </a>
-        </Link>
-        {console.log(channel.urls.banner_image.original)}
+      <Layout title={channel.title}>
         {channel.urls.banner_image.original != null ? (
           <img
             className="banner"
@@ -46,44 +88,31 @@ export default class extends React.Component {
           </div>
         )}
 
-        <p>{channel.description}</p>
+        {channel.description > '' ? (
+          <div className="descriptionContainer">
+            <p className="description">{channel.description}</p>
+          </div>
+        ) : null}
 
         {audio_clips > [] ? (
-          <>
-            <h2>Ultimos Podcast</h2>
-            {audio_clips.map((clip) => (
-              <Link key={clip.id} href={`/podcast?id=${clip.id}`}>
-                <a className="podcast">
-                  <h3>{clip.title}</h3>
-                  <div className="meta">
-                    {Math.ceil(clip.duration / 60)} minutes
-                  </div>
-                </a>
-              </Link>
-            ))}
-          </>
+          <PodcastList
+            audio_clips={audio_clips}
+            onClickPodcast={this.openPodcast}
+          ></PodcastList>
         ) : null}
 
         {series > [] ? (
-          <>
-            <h2>Series</h2>
-            {series.map((serie) => (
-              <Link key={serie.id} href={`/channel?id=${serie.id}`}>
-                <a className="podcast">
-                  <h3>{serie.title}</h3>
-                </a>
-              </Link>
-            ))}
-            {console.log(series)}
-          </>
+          <ChannelGrid channels={series} language="Series" />
         ) : null}
 
+        {/* Modal */}
+        {openPodcast && (
+          <div className="modal">
+            <PodcastPlayer clip={openPodcast} onClose={this.closePodcast} />
+          </div>
+        )}
+
         <style jsx>{`
-          header {
-            color: #fff;
-            background: #8756ca;
-            padding: 15px;
-          }
           .defaultBanner {
             display: flex;
             justify-content: center;
@@ -99,37 +128,32 @@ export default class extends React.Component {
           .banner {
             width: 100%;
           }
-          .podcast {
-            display: block;
-            text-decoration: none;
-            color: #333;
-            padding: 15px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-            cursor: pointer;
+          .descriptionContainer {
+            border-radius: 40px;
+            background-color: #2a0a22;
+            max-height: 150px;
+            max-width: 500px;
+            margin: 2em auto;
+            padding: 1em 2em;
+            box-shadow: 3px 4px 3px rgba(0, 0, 0, 0.5);
           }
-          .podcast:hover {
-            color: #000;
+          .description {
+            max-height: 100px;
+            height: 100%;
+            overflow-y: scroll;
+            text-align: center;
+            color: #eee;
           }
-          .podcast h3 {
-            margin: 0;
-          }
-          .podcast .meta {
-            color: #666;
-            margin-top: 0.5em;
-            font-size: 0.8em;
-          }
-        `}</style>
-        <style jsx global>{`
-          body {
-            margin: 0;
-            font-family: system-ui;
-            background: white;
-          }
-          a {
-            text-decoration: none;
+          .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 99999;
           }
         `}</style>
-      </div>
+      </Layout>
     )
   }
 }
