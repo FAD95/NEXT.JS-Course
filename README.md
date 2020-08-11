@@ -4,7 +4,7 @@ App de Podcasts integrada con la API de AudioBoom para aprender NEXT.JS
 
 ![Captura de la App](./.readme-static/App.png)
 
-_https://next-js.fad95.now.sh_
+_https://next-js-eight-liart.now.sh/
 
 ## ¿Cómo funciona?
 
